@@ -37,6 +37,15 @@ def obtainHitObjectArrayFromOsu(file):
 
 
 def obtainDensityCalculation(ho, bin_size):
+    # TODO: Could consider np.histogram
+    # https://numpy.org/doc/stable/reference/generated/numpy.histogram.html#numpy.histogram
+    #
+    # Example:
+    # np.histogram([1, 2, 1], bins=[0, 1, 2, 3])
+    # >> (array([0, 2, 1]), array([0, 1, 2, 3]))
+    # First array is the histogram
+    # Second is the histogram edges? Not too sure if you need it though
+
     v = np.zeros(int(math.ceil(ho[-1].timestamp - ho[0].timestamp) / bin_size))
     x = np.zeros(int(math.ceil(ho[-1].timestamp - ho[0].timestamp) / bin_size))
     d = 0
@@ -58,9 +67,12 @@ def obtainDensityCalculation(ho, bin_size):
 
 def obtainDensityCalculation2(ho, bin_size):
     v = np.zeros(len(ho), dtype=int)
+    # TODO: x not used
     x = np.zeros(len(ho), dtype=int)
     j = 0
     k = 0
+
+    # TODO: lastt not used
     lastt = -1
     for i in range(len(ho)):
         # if ho[i].timestamp==lastt:
@@ -82,6 +94,7 @@ def obtainDensityCalculation2(ho, bin_size):
 
 def obtainManipCalculation(ho, bin_size):
     v = np.zeros(len(ho))
+    # TODO: x not used
     x = np.zeros(len(ho))
     j = 0
     k = 0
@@ -108,8 +121,10 @@ def obtainManipCalculation(ho, bin_size):
     return v
 
 
+# TODO: bin_size not used
 def obtainMotionCalculation(ho, bin_size):
     v = np.zeros(len(ho))
+    # TODO: x j k not used
     x = np.zeros(len(ho))
     j = 0
     k = 0
@@ -172,8 +187,11 @@ def obtainMotionCalculation(ho, bin_size):
     return v
 
 
+# TODO: bin_size not used
 def obtainInverseCalculation(ho, bin_size):
     v = np.ones(len(ho))
+
+    # TODO: x j k not used
     x = np.zeros(len(ho))
     j = 0
     k = 0
@@ -189,8 +207,11 @@ def obtainInverseCalculation(ho, bin_size):
     return v
 
 
+# TODO: bin_size not used
 def obtainLNnessCalculation(ho, bin_size):
     v = np.ones(len(ho))
+
+    # TODO: x j k not used
     x = np.zeros(len(ho))
     j = 0
     k = 0
@@ -204,14 +225,18 @@ def obtainLNnessCalculation(ho, bin_size):
     return v
 
 
+# TODO: bin_size not used
 def obtainReleaseCalculation(ho, bin_size):
     def s(x):
         return 1 / (1 + math.exp(-x))
 
     def f(x):
+        # TODO: Return 1000 ?
+        # If x is a primitive, e.g. int, float, x = 1000 will do nothing as it's pass by copy
         if x > 1000: x = 1000
         return s(0.1 * (x - 60)) + s(0.1 * (-x + 180)) - 1
 
+    # TODO: x j not used
     v = np.zeros(len(ho))
     x = np.zeros(len(ho))
     j = 0
