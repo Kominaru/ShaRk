@@ -18,7 +18,7 @@ wcsv=True  #Whether to write results into csv
 
 
 #CSV header row
-header=["Beatmap ID","Collection Name","Chart Name","Density","Manipulability","Strain","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
+header=["Beatmap ID","Collection Name","Chart Name","Density","Manipulability","Strain","Rhythm","RICE TOTAL","Inverse","Release","Hold","LNNess","LN TOTAL","GLOBAL","DT GLOBAL"]
 
 
 counter=1
@@ -80,6 +80,7 @@ if mode=="collections":
                     np.average(b_calc.nomod.dns_roll),
                     np.average(b_calc.nomod.mnp_roll),
                     np.average(b_calc.nomod.stn_roll),
+                    np.average(b_calc.nomod.rhy_roll),
                     np.average(b_calc.nomod.rice_ttl_roll),
                     np.average(b_calc.nomod.inv_roll),
                     np.average(b_calc.nomod.rel_roll),
@@ -151,6 +152,7 @@ else:
                 np.average(b_calc.nomod.dns_roll),
                 np.average(b_calc.nomod.mnp_roll),
                 np.average(b_calc.nomod.stn_roll),
+                np.average(b_calc.nomod.rhy_roll),
                 np.average(b_calc.nomod.rice_ttl_roll),
                 np.average(b_calc.nomod.inv_roll),
                 np.average(b_calc.nomod.rel_roll),

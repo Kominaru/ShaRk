@@ -27,9 +27,11 @@ def obtainDensityCalculation(ho):
         while ho[wr].timestamp < (ho[i].timestamp+bin_size/2) and wr < len(ho)-1:
             wr += 1
 
+        c1= 2*(ho[i].column//2)+(ho[i].column+1)%2
         for j in range(wl,wr+1):
-            distance=((ho[j].timestamp-ho[i].timestamp)/(bin_size/2))*3
-            d+=gaussian(distance)
+            if ho[j].column==ho[i].column or ho[j].column==c1:
+                distance=((ho[j].timestamp-ho[i].timestamp)/(bin_size/2))*3
+                d+=gaussian(distance)
         # The note count is simply the index difference
 
         density[i] = d

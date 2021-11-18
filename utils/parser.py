@@ -12,6 +12,7 @@ from modules.Inverse import obtainInverseCalculation
 from modules.Release import obtainReleaseCalculation
 from modules.Strain import obtainStrainCalculation
 from modules.Hold import obtainHoldCalculation
+from modules.Rhythm import obtainRhythmCalculation
 
 class HitObject:
     def __init__(self, column, timestamp, lnend=0) -> None:
@@ -66,7 +67,7 @@ class ModuleCalculations:
         t0=time()
         # print(f"Basic Modules: {time()-t}")
         t=time()
-
+        self.rhy = obtainRhythmCalculation(ho)
         #Rolling averages
         self.dns_roll=roll(self.dns)
         self.mnp_roll=roll(self.mnp)
@@ -75,11 +76,12 @@ class ModuleCalculations:
         self.rel_roll=roll(self.rel)
         self.lns_roll=roll(self.lns)
         self.hld_roll=roll(self.hld)
+        self.rhy_roll =roll(self.rhy)
         # print(f"Rolling avgs: {time()-t}")
         t=time()
         #Rice Total
-        self.rice_ttl=self.computeRiceTotal(self.dns,self.mnp,self.stn)
-        self.rice_ttl_roll=self.computeRiceTotal(self.dns_roll,self.mnp_roll,self.stn_roll)
+        self.rice_ttl=self.computeRiceTotal(self.dns,self.mnp,self.stn,self.rhy)
+        self.rice_ttl_roll=self.computeRiceTotal(self.dns_roll,self.mnp_roll,self.stn_roll,self.rhy_roll)
 
         #Ln Total
         self.ln_ttl=self.computeLNTotal(self.inv,self.rel,self.lns,self.hld)
@@ -90,8 +92,8 @@ class ModuleCalculations:
         self.ttl_roll=self.computeGlobal(self.rice_ttl_roll,self.ln_ttl_roll)
         # print(f"Globals: {time()-t}")
         t=time()
-    def computeRiceTotal(self,dns,mnp,stn):
-        return (dns/mnp)*stn
+    def computeRiceTotal(self,dns,mnp,stn,rhy):
+        return (dns/mnp)*stn*rhy
     
     def computeLNTotal(self,inv,rel,lns,hld):
         return np.power(1+inv+2*rel,lns)*np.power(hld,1)

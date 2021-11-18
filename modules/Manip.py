@@ -51,7 +51,6 @@ def obtainManipCalculation(ho):
         else:
             m=np.amin(np.amax(r_hand)-2*np.sqrt(r_hand*(np.amax(r_hand)-r_hand)))/np.amax(r_hand)
         
-        if math.isnan(m): print(col_counts, ho[i].column)
-        manip[i] = 1/(2-m)
+        manip[i] = (1/(2-m))**2
 
     return manip
