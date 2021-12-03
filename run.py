@@ -9,11 +9,7 @@ from utils.osu_api import extractBeatmapIds, getOsuFile
 from utils.parser import *
 
 from time import time
-
-
-plots=False #Whether to plot stuff 
-wcsv=True  #Whether to write results into csv
-
+from config import Config
 
 
 
@@ -31,7 +27,7 @@ colls_folder = './collections/'
 os.makedirs('csvs', exist_ok=True)
 os.makedirs('cached_maps', exist_ok=True)
 
-if wcsv: 
+if Config.wcsv: 
     csv_file = open('./CSVS/ALL.csv', 'w', encoding='UTF8', newline='')
     global_writer = csv.writer(csv_file)
     global_writer.writerow(header)
@@ -52,7 +48,7 @@ if mode == 'collections':
             beatmap_list = extractBeatmapIds(f.read())
 
             # Prepare CSV collection
-            if wcsv: 
+            if Config.wcsv: 
                 csv_file = open(f'./csvs/{coll_name}.csv', 'w', encoding='UTF8', newline='')
                 writer = csv.writer(csv_file)
                 writer.writerow(header)
@@ -67,7 +63,7 @@ if mode == 'collections':
                 b_calc = BeatmapCalculations(b)
 
                 # Write to CSV
-                if wcsv: 
+                if Config.wcsv: 
                     row = [
                         b.beatmapid,
                         coll_name,
@@ -91,7 +87,7 @@ if mode == 'collections':
                     counter += 1
 
                 # Plots
-                if plots:
+                if Config.plots:
                     color = (random.random(),random.random(),random.random())
                     x = np.array([h.timestamp for h in b.hitobjects])
 
@@ -107,7 +103,7 @@ if mode == 'collections':
                     generate_subplot(total,      x, b_calc.nomod.ttl,      b_calc.nomod.ttl_roll,      color, b.name, i, 'Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD')
 
                     i -= 0.07
-        if plots:
+        if Config.plots:
             inverse.legend()
             plt.subplots_adjust(wspace=.5)
             plt.show()
@@ -130,7 +126,7 @@ else:
             b_calc = BeatmapCalculations(b)
 
             #Write to CSV
-            if wcsv: 
+            if Config.wcsv: 
                 row = [
                     b.beatmapid,
                     'ranked',
@@ -152,7 +148,7 @@ else:
                 counter += 1
 
             # Plots
-            if plots:
+            if Config.plots:
                 color = (random.random(),random.random(),random.random())
                 x = np.array([ h.timestamp for h in b.hitobjects ])
 
@@ -169,7 +165,7 @@ else:
 
                 i -= 0.07
 
-    if plots:
+    if Config.plots:
         inverse.legend()
         plt.subplots_adjust(wspace=.5)
         plt.show()
