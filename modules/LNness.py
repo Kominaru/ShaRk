@@ -1,11 +1,7 @@
 import math
 import numpy as np
 
-# Sigmoidal centered at 90ms
 
-
-def s(x):
-    return 1 / (1 + math.exp(9-0.1*x))
 
 ###############################################################################
 #   Defines how much of an LN a long note really is based on its length
@@ -15,10 +11,12 @@ def s(x):
 
 
 def obtainLNnessCalculation(ho):
+    # Sigmoidal centered at 90ms
+    s = lambda x: 1 / (1 + math.exp(9 - 0.1*x))
     lnness = np.zeros(len(ho))
 
     for i in range(len(ho)):
         if ho[i].isln:
-            lnness[i] = s(ho[i].lnend-ho[i].timestamp)
+            lnness[i] = s(ho[i].lnend - ho[i].timestamp)
 
     return lnness
