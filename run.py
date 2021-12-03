@@ -17,7 +17,7 @@ wcsv=True  #Whether to write results into csv
 
 
 
-#CSV header row
+# CSV header row
 header = [ 'Beatmap ID', 'Collection Name', 'Chart Name', 'Density', 'Manipulability', 'Strain', 'RICE TOTAL', 'Inverse', 'Release', 'Hold', 'LNNess', 'LN TOTAL', 'GLOBAL', 'DT GLOBAL' ]
 
 
@@ -39,7 +39,7 @@ if wcsv:
 mode = 'ranked'
 
 if mode == 'collections':
-    #Identify all collections in collections folder
+    # Identify all collections in collections folder
     for coll in os.listdir(colls_folder):
         i = .9
 
@@ -48,10 +48,10 @@ if mode == 'collections':
         coll_name = coll.split('.')[0]
         with open(colls_folder + coll, 'r', encoding='utf8', errors='ignore') as f: 
             
-            #Find all beatmap IDs in the file
+            # Find all beatmap IDs in the file
             beatmap_list = extractBeatmapIds(f.read())
 
-            #Prepare CSV collection
+            # Prepare CSV collection
             if wcsv: 
                 csv_file = open(f'./csvs/{coll_name}.csv', 'w', encoding='UTF8', newline='')
                 writer = csv.writer(csv_file)
@@ -66,7 +66,7 @@ if mode == 'collections':
             
                 b_calc = BeatmapCalculations(b)
 
-                #Write to CSV
+                # Write to CSV
                 if wcsv: 
                     row = [
                         b.beatmapid,
@@ -90,7 +90,7 @@ if mode == 'collections':
 
                     counter += 1
 
-                #Plots
+                # Plots
                 if plots:
                     color = (random.random(),random.random(),random.random())
                     x = np.array([h.timestamp for h in b.hitobjects])
