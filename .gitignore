@@ -3,3 +3,4 @@
 *.osu
 *.csv
 *.txt
+/venv/*
