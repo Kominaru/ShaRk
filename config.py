@@ -6,5 +6,5 @@ class Config():
     MODE_COLLECTIONS = 1
 
     plots = True        # Whether to plot stuff 
-    wcsv  = True         # Whether to write results into csv
-    mode  = MODE_RANKED
+    wcsv  = False        # Whether to write results into csv
+    mode  = MODE_COLLECTIONS
