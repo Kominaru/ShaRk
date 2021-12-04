@@ -1,4 +1,5 @@
 numpy
-matplotlib
 scipy
 requests
+pyqtgraph
+pyqt5

@@ -1,6 +1,5 @@
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 from numpy.lib.function_base import average
 import random
 import csv
@@ -10,6 +9,9 @@ from utils.parser import *
 
 from time import time
 from config import Config
+
+import pyqtgraph
+from pyqtgraph import QtGui, QtCore
 
 
 
@@ -33,13 +35,40 @@ class Main():
             self.csv_writer = csv.writer(csv_file)
             self.csv_writer.writerow(self.header)
 
+        if Config.plots:
+            self.__build_gui()
+
+
         if Config.mode == Config.MODE_COLLECTIONS:
             self.run_collections_mode()
 
         if Config.mode == Config.MODE_RANKED:
             self.run_ranked_mode()
-
+    
         print(time() - t)
+
+        if Config.plots:
+            self.__select_data_idx(0)
+            self.app.exec_()
+
+
+    def __build_gui(self):
+        self.app = pyqtgraph.mkQApp('Mania plots')
+        
+        self.map_list = QtGui.QListWidget()
+        self.map_list.currentRowChanged.connect(self.__select_data_idx)
+        self.selected_layout = None
+        self.plot_layouts = []
+
+        self.main_widget = QtGui.QWidget()
+        self.main_layout = QtGui.QHBoxLayout(self.main_widget)
+        self.main_layout.addWidget(self.map_list)
+        
+        self.main_widget.resize(1000, 600)
+        self.main_widget.setWindowTitle('Mania plots')
+
+        pyqtgraph.setConfigOptions(antialias=True)
+        self.main_widget.show()
 
 
     def run_collections_mode(self):
@@ -48,17 +77,8 @@ class Main():
 
         # Identify all collections in collections folder
         for coll in os.listdir(self.collections_folder):
-            fig, (
-                (dens, inverse), 
-                (manip, release), 
-                (strain, lnness), 
-                (rice_total, hold), 
-                (total,  ln_total)
-            ) = plt.subplots(nrows=5, ncols=2, sharex=True)
-            
             coll_name = coll.split('.')[0]
             with open(f'{self.collections_folder}{coll}', 'r', encoding='utf8', errors='ignore') as f: 
-                
                 # Find all beatmap IDs in the file
                 beatmap_list = extractBeatmapIds(f.read())
 
@@ -72,7 +92,9 @@ class Main():
                     b_file = getOsuFile(b_id)
                     b = obtainHitObjectArrayFromOsu(b_file)
 
-                    if b.keys != 4: continue
+                    if b.keys != 4:
+                        continue
+                    
                     print(counter, ' | ', b.name)
                 
                     b_calc = BeatmapCalculations(b)
@@ -103,45 +125,41 @@ class Main():
 
                     # Plots
                     if Config.plots:
-                        color = (random.random(),random.random(),random.random())
-                        x = np.array([h.timestamp for h in b.hitobjects])
-                        i = .9
+                        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+                        x = np.array([ h.timestamp for h in b.hitobjects ])
 
-                        generate_subplot(dens,       x, b_calc.nomod.dns,      b_calc.nomod.dns_roll,      color, b.name, i, 'DNS - Density Component')
-                        generate_subplot(manip,      x, b_calc.nomod.mnp,      b_calc.nomod.mnp_roll,      color, b.name, i, 'MNP - Manipulability Component')
-                        generate_subplot(strain,     x, b_calc.nomod.stn,      b_calc.nomod.stn_roll,      color, b.name, i, 'STR - Strain Component')
-                        generate_subplot(inverse,    x, b_calc.nomod.inv,      b_calc.nomod.inv_roll,      color, b.name, i, 'LN-INV - LN Inverse Component')
-                        generate_subplot(release,    x, b_calc.nomod.rel,      b_calc.nomod.rel_roll,      color, b.name, i, 'LN-REL - LN Release Component')
-                        generate_subplot(lnness,     x, b_calc.nomod.lns,      b_calc.nomod.lns_roll,      color, b.name, i, 'LN-LNS - LN LNness Component')
-                        generate_subplot(hold,       x, b_calc.nomod.hld,      b_calc.nomod.hld_roll,      color, b.name, i, 'LN-HLD - LN Hold Strain Difficulty')
-                        generate_subplot(ln_total,   x, b_calc.nomod.ln_ttl,   b_calc.nomod.ln_ttl_roll,   color, b.name, i, 'LN Total - (INV+REL)^LNS * HLD')
-                        generate_subplot(rice_total, x, b_calc.nomod.rice_ttl, b_calc.nomod.rice_ttl_roll, color, b.name, i, 'RICE Total - (DNS*STR)/MNP')
-                        generate_subplot(total,      x, b_calc.nomod.ttl,      b_calc.nomod.ttl_roll,      color, b.name, i, 'Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD')
+                        plot_layout = pyqtgraph.GraphicsLayoutWidget()
 
-                        i -= 0.07
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.dns,      b_calc.nomod.dns_roll,      color, b.name, 'DNS - Density Component')
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.mnp,      b_calc.nomod.mnp_roll,      color, b.name, 'MNP - Manipulability Component')
+                        plot_layout.nextRow() 
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.stn,      b_calc.nomod.stn_roll,      color, b.name, 'STR - Strain Component')
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.inv,      b_calc.nomod.inv_roll,      color, b.name, 'LN-INV - LN Inverse Component')
+                        plot_layout.nextRow() 
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.rel,      b_calc.nomod.rel_roll,      color, b.name, 'LN-REL - LN Release Component')
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.lns,      b_calc.nomod.lns_roll,      color, b.name, 'LN-LNS - LN LNness Component')
+                        plot_layout.nextRow() 
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.hld,      b_calc.nomod.hld_roll,      color, b.name, 'LN-HLD - LN Hold Strain Difficulty')
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.ln_ttl,   b_calc.nomod.ln_ttl_roll,   color, b.name, 'LN Total - (INV+REL)^LNS * HLD')
+                        plot_layout.nextRow()
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.rice_ttl, b_calc.nomod.rice_ttl_roll, color, b.name, 'RICE Total - (DNS*STR)/MNP')
+                        self.__generate_subplot(plot_layout, x, b_calc.nomod.ttl,      b_calc.nomod.ttl_roll,      color, b.name, 'Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD')
 
-            if Config.plots:
-                inverse.legend()
-                plt.subplots_adjust(wspace=.5)
-                plt.show()
+                        self.plot_layouts.append(plot_layout)
+                        self.map_list.addItem(QtGui.QListWidgetItem(b.name))
+                        self.main_layout.addWidget(plot_layout)
+                        plot_layout.hide()
 
 
     def run_ranked_mode(self):
         counter = 1
         folder = self.maps_folder
 
-        fig, (
-            (dens, inverse),
-            (manip, release), 
-            (strain, lnness), 
-            (rice_total, hold), 
-            (total,  ln_total)
-        ) = plt.subplots(nrows=5, ncols=2, sharex=True)
-
         for m in os.listdir(folder):
             with open(f'{folder}{m}', 'r', encoding='utf8', errors='ignore') as b_file: 
                 b = obtainHitObjectArrayFromOsu(b_file)
-                if b.keys != 4: continue
+                if b.keys != 4:
+                    continue
                 
                 print(counter, ' | ', b.name)
             
@@ -171,27 +189,48 @@ class Main():
 
                 # Plots
                 if Config.plots:
-                    color = (random.random(),random.random(),random.random())
+                    color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
                     x = np.array([ h.timestamp for h in b.hitobjects ])
-                    i = .9
 
-                    generate_subplot(dens,       x, b_calc.nomod.dns,      b_calc.nomod.dns_roll,      color, b.name, i, 'DNS - Density Component')
-                    generate_subplot(manip,      x, b_calc.nomod.mnp,      b_calc.nomod.mnp_roll,      color, b.name, i, 'MNP - Manipulability Component')
-                    generate_subplot(strain,     x, b_calc.nomod.stn,      b_calc.nomod.stn_roll,      color, b.name, i, 'STR - Strain Component')
-                    generate_subplot(inverse,    x, b_calc.nomod.inv,      b_calc.nomod.inv_roll,      color, b.name, i, 'LN-INV - LN Inverse Component')
-                    generate_subplot(release,    x, b_calc.nomod.rel,      b_calc.nomod.rel_roll,      color, b.name, i, 'LN-REL - LN Release Component')
-                    generate_subplot(lnness,     x, b_calc.nomod.lns,      b_calc.nomod.lns_roll,      color, b.name, i, 'LN-LNS - LN LNness Component')
-                    generate_subplot(hold,       x, b_calc.nomod.hld,      b_calc.nomod.hld_roll,      color, b.name, i, 'LN-HLD - LN Hold Strain Difficulty')
-                    generate_subplot(ln_total,   x, b_calc.nomod.ln_ttl,   b_calc.nomod.ln_ttl_roll,   color, b.name, i, 'LN Total - (INV+REL)^LNS * HLD')
-                    generate_subplot(rice_total, x, b_calc.nomod.rice_ttl, b_calc.nomod.rice_ttl_roll, color, b.name, i, 'RICE Total - (DNS*STR)/MNP')
-                    generate_subplot(total,      x, b_calc.nomod.ttl,      b_calc.nomod.ttl_roll,      color, b.name, i, 'Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD')
+                    plot_layout = pyqtgraph.GraphicsLayoutWidget()
 
-                    i -= 0.07
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.dns,      b_calc.nomod.dns_roll,      color, b.name, 'DNS - Density Component')
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.mnp,      b_calc.nomod.mnp_roll,      color, b.name, 'MNP - Manipulability Component')
+                    plot_layout.nextRow() 
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.stn,      b_calc.nomod.stn_roll,      color, b.name, 'STR - Strain Component')
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.inv,      b_calc.nomod.inv_roll,      color, b.name, 'LN-INV - LN Inverse Component')
+                    plot_layout.nextRow() 
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.rel,      b_calc.nomod.rel_roll,      color, b.name, 'LN-REL - LN Release Component')
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.lns,      b_calc.nomod.lns_roll,      color, b.name, 'LN-LNS - LN LNness Component')
+                    plot_layout.nextRow() 
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.hld,      b_calc.nomod.hld_roll,      color, b.name, 'LN-HLD - LN Hold Strain Difficulty')
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.ln_ttl,   b_calc.nomod.ln_ttl_roll,   color, b.name, 'LN Total - (INV+REL)^LNS * HLD')
+                    plot_layout.nextRow() 
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.rice_ttl, b_calc.nomod.rice_ttl_roll, color, b.name, 'RICE Total - (DNS*STR)/MNP')
+                    self.__generate_subplot(plot_layout, x, b_calc.nomod.ttl,      b_calc.nomod.ttl_roll,      color, b.name, 'Total - ((DNS*STR)/MNP * (INV+REL)^LNS) * HLD')
+                
+                    self.plot_layouts.append(plot_layout)
+                    self.map_list.addItem(QtGui.QListWidgetItem(b.name))
+                    self.main_layout.addWidget(plot_layout)
+                    plot_layout.hide()
 
-        if Config.plots:
-            inverse.legend()
-            plt.subplots_adjust(wspace=.5)
-            plt.show()
+
+    def __generate_subplot(self, plot_layout, x, raw, roll, color, map, title):
+        #return plot_layout.addPlot(x=x, y=raw, title=title, color=color, name=map)
+        return plot_layout.addPlot(x=x, y=roll, title=title, pen=color)
+
+
+    def __select_data_idx(self, idx):
+        selected_layout = self.plot_layouts[idx]
+        if self.selected_layout == selected_layout:
+            return
+
+        if type(self.selected_layout) != type(None):
+            self.selected_layout.hide()
+
+        self.selected_layout = selected_layout
+        self.selected_layout.show()
+        
 
 
 if __name__ == '__main__':
